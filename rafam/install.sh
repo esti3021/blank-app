@@ -76,9 +76,10 @@ nginx -t
 systemctl enable --now nginx
 systemctl reload nginx
 
-if [ -n "$DOMAIN" ] && [ -n "$EMAIL" ]; then
+if [ -n "$DOMAIN" ]; then
   dnf install -y certbot python3-certbot-nginx
-  if certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" -m "$EMAIL" --agree-tos --no-eff-email --redirect -n; then
+  if [ -n "$EMAIL" ]; then MAILOPT="-m $EMAIL --no-eff-email"; else MAILOPT="--register-unsafely-without-email"; fi
+  if certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" $MAILOPT --agree-tos --redirect -n; then
     grep -q COOKIE_SECURE /etc/rafam.env || echo "COOKIE_SECURE=1" >> /etc/rafam.env
     systemctl restart rafam
     echo "HTTPS פעיל: https://$DOMAIN/"
